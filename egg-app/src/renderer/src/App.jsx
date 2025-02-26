@@ -1,13 +1,23 @@
 import React, { useState, useEffect } from 'react'
+import { Box } from '@mui/material'
+import bullseye from './assets/icons/bullseye.png'
+import boiled from './assets/icons/boiled2.png'
+import closeIcon from './assets/icons/close_button.png'
+import minimizeIcon from './assets/icons/minimize_button.png'
 
 function App() {
   const [timeLeft, setTimeLeft] = useState(0) // Time in seconds
   const [isRunning, setIsRunning] = useState(false)
-  const { ommelet, bullseye, boiledegg, scrammbled } = [10, 200, 300, 400]
+  const { ommelet, bullseyeTimer, boiledegg, scrammbled } = {
+    ommelet: 10,
+    bullseyeTimer: 200,
+    boiledegg: 300,
+    scrammbled: 400
+  } // Renamed 'bullseye' to avoid conflict
 
-  // Start timer with 5 minutes (300 seconds) by default (for a typical boiled egg)
+  // Start timer with specific type duration
   const startTimer = (type) => {
-    setTimeLeft(type) // 5 minutes
+    setTimeLeft(type)
     setIsRunning(true)
   }
 
@@ -30,7 +40,7 @@ function App() {
         setTimeLeft((prev) => prev - 1)
       }, 1000)
     } else if (timeLeft === 0 && isRunning) {
-      alert('Egg timer done!') // You could enhance this with a notification
+      alert('Egg timer done!')
       setIsRunning(false)
     }
     return () => clearInterval(interval)
@@ -44,26 +54,107 @@ function App() {
   }
 
   return (
-    <div style={{ textAlign: 'center', padding: '20px' }}>
-      <h1>Egg Timer</h1>
-      <div>
-        <h2>{formatTime(timeLeft)}</h2>
-        <button onClick={() => startTimer(10)} disabled={isRunning}>
-          ommelet
-        </button>
-        <button onClick={() => startTimer(200)} disabled={isRunning}>
-          bullseye
-        </button>
-        <button onClick={() => startTimer(300)} disabled={isRunning}>
-          boiledegg
-        </button>
-        <button onClick={() => startTimer(400)} disabled={isRunning}>
-          scrammbled
-        </button>
-        <button onClick={stopTimer}>{isRunning ? 'pause' : 'continue'}</button>
-        <button onClick={resetTimer}>Reset</button>
+    <>
+      <div
+        style={{
+          height: '32px',
+          backgroundColor: '#333',
+          color: '#fff',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '0 10px',
+          WebkitAppRegion: 'drag' // Makes the title bar draggable
+        }}
+      >
+        <span>Egg Timer</span>
+        <div style={{ display: 'flex', gap: '5px', WebkitAppRegion: 'no-drag' }}>
+          <button
+            onClick={''}
+            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+          >
+            <img src={minimizeIcon} alt="Minimize" style={{ width: '16px', height: '16px' }} />
+          </button>
+          <button
+            onClick={''}
+            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+          >
+            <img src={closeIcon} alt="Close" style={{ width: '16px', height: '16px' }} />
+          </button>
+        </div>
       </div>
-    </div>
+      <div style={{ textAlign: 'center', padding: '20px' }}>
+        <h1>Choose your egg</h1>
+        <div>
+          <h2>{formatTime(timeLeft)}</h2>
+          {!isRunning ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', mb: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <img
+                  src={bullseye}
+                  alt="bullseye"
+                  onClick={() => startTimer(ommelet)}
+                  disabled={isRunning}
+                  style={{
+                    width: '100px',
+                    height: '100px',
+                    cursor: isRunning ? 'not-allowed' : 'pointer' // Cursor on image
+                  }}
+                />
+                <img
+                  src={bullseye}
+                  alt="bullseye"
+                  onClick={() => startTimer(bullseyeTimer)}
+                  disabled={isRunning}
+                  style={{
+                    width: '100px',
+                    height: '100px',
+                    cursor: isRunning ? 'not-allowed' : 'pointer' // Cursor on image
+                  }}
+                />
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <img
+                  src={boiled}
+                  alt="boiled"
+                  onClick={() => startTimer(boiledegg)}
+                  disabled={isRunning}
+                  style={{
+                    width: '100px',
+                    height: '100px',
+                    cursor: isRunning ? 'not-allowed' : 'pointer' // Cursor on image
+                  }}
+                />
+                <img
+                  src={boiled}
+                  alt="boiled"
+                  onClick={() => startTimer(scrammbled)}
+                  disabled={isRunning}
+                  style={{
+                    width: '100px',
+                    height: '100px',
+                    cursor: isRunning ? 'not-allowed' : 'pointer' // Cursor on image
+                  }}
+                />
+              </Box>
+            </Box>
+          ) : (
+            <Box sx={{}}>
+              <img
+                src={bullseye}
+                alt="bullseye"
+                style={{
+                  width: '225px',
+                  height: '225px'
+                }}
+              />
+            </Box>
+          )}
+          <button onClick={stopTimer}>{isRunning ? 'pause' : 'continue'}</button>
+          <button onClick={resetTimer}>Reset</button>
+        </div>
+      </div>
+    </>
   )
 }
 
