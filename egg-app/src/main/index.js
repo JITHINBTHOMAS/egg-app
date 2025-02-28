@@ -1,3 +1,4 @@
+// electron/main/index.js
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -9,7 +10,7 @@ function createWindow() {
     width: 300,
     height: 400,
     show: false,
-    frame:false,
+    frame: false,
     autoHideMenuBar: true,
     ...(process.platform === 'win32' ? { icon } : {}),
     webPreferences: {
@@ -52,6 +53,17 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
+
+  // Added IPC handlers for minimize and close
+  ipcMain.on('minimize-window', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    win.minimize();
+  });
+
+  ipcMain.on('close-window', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    win.close();
+  });
 
   createWindow()
 
