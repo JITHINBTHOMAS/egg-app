@@ -1,53 +1,72 @@
 import React, { useState, useEffect } from 'react'
-import { Box, IconButton, Tooltip, Typography } from '@mui/material'
+import { Box, IconButton, Modal, Tooltip, Typography, TextField, Button } from '@mui/material'
 import bullseyeIcon from './assets/icons/bullseye.png'
 import boiled from './assets/icons/boiled2.png'
 import omeletteIcon from './assets/icons/omelette.png'
 import scrambledIcon from './assets/icons/scrambled.png'
 import closeIcon from './assets/icons/close_button.png'
 import minimizeIcon from './assets/icons/minimize_button.png'
+import settingsIcon from './assets/icons/settings.png'
 import title_bar from './assets/icons/title_bar.png'
 import pauseIcon from './assets/icons/pause_continue_button.png'
 import resetIcon from './assets/icons/reset_button.png'
 import logo from '../../../resources/egg-app-logo.png?asset'
+import eggAppBackground from './assets/icons/egg-app-background.png'
 
 function App() {
-  const [timeLeft, setTimeLeft] = useState(0) // Time in seconds
+  const [timeLeft, setTimeLeft] = useState(0)
   const [isRunning, setIsRunning] = useState(false)
   const [hasStarted, setHasStarted] = useState(false)
-  const [currentEgg, setCurrentEgg] = useState('') // Stores the current egg type
+  const [currentEgg, setCurrentEgg] = useState('')
+  const [open, setOpen] = useState(false)
+  const [eggTimes, setEggTimes] = useState({
+    ommelet: 10,
+    bullseye: 200,
+    boiledegg: 300,
+    scrammbled: 400
+  })
   const eggTypes = {
-    ommelet: { time: 10, name: 'Omelette', image: omeletteIcon },
-    bullseye: { time: 200, name: 'Bullseye', image: bullseyeIcon },
-    boiledegg: { time: 300, name: 'Boiled Egg', image: boiled },
-    scrammbled: { time: 400, name: 'Scrambled', image: scrambledIcon }
+    ommelet: { time: eggTimes.ommelet, name: 'Omelette', image: omeletteIcon },
+    bullseye: { time: eggTimes.bullseye, name: 'Bullseye', image: bullseyeIcon },
+    boiledegg: { time: eggTimes.boiledegg, name: 'Boiled Egg', image: boiled },
+    scrammbled: { time: eggTimes.scrammbled, name: 'Scrambled', image: scrambledIcon }
   }
 
   const handleMinimize = () => window.electron.minimize()
   const handleClose = () => window.electron.close()
+  const handleSettingsOpen = () => setOpen(true)
+  const handleSettingsClose = () => setOpen(false)
 
-  // Start timer with specific type duration and set current egg
   const startTimer = (type) => {
     setTimeLeft(eggTypes[type].time)
-    setCurrentEgg(type) // Store the selected egg type
+    setCurrentEgg(type)
     setIsRunning(true)
     setHasStarted(true)
   }
 
-  // Stop/Pause timer
   const stopTimer = () => {
     setIsRunning(!isRunning)
   }
 
-  // Reset timer
   const resetTimer = () => {
     setTimeLeft(0)
     setIsRunning(false)
-    setCurrentEgg('') // Clear current egg on reset
+    setCurrentEgg('')
     setHasStarted(false)
   }
 
-  // Timer logic
+  const handleTimeChange = (type, value) => {
+    setEggTimes((prev) => ({
+      ...prev,
+      [type]: parseInt(value) || 0 // Ensure integer, default to 0 if invalid
+    }))
+  }
+
+  const applyChanges = () => {
+    // No additional state update needed since eggTimes is already updated
+    handleSettingsClose()
+  }
+
   useEffect(() => {
     let interval
     if (isRunning && timeLeft > 0) {
@@ -57,12 +76,11 @@ function App() {
     } else if (timeLeft === 0 && isRunning) {
       alert('Egg timer done!')
       setIsRunning(false)
-      setCurrentEgg('') // Clear current egg when timer finishes
+      setCurrentEgg('')
     }
     return () => clearInterval(interval)
   }, [isRunning, timeLeft])
 
-  // Format time (MM:SS)
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60)
     const secs = seconds % 60
@@ -81,7 +99,7 @@ function App() {
           backgroundImage: `url(${title_bar})`,
           alignItems: 'center',
           padding: '0 10px',
-          WebkitAppRegion: 'drag' // Makes the title bar draggable
+          WebkitAppRegion: 'drag'
         }}
       >
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
@@ -98,9 +116,17 @@ function App() {
         </div>
       </div>
       <div style={{ textAlign: 'center', padding: '10px', height: '270px', width: '300px' }}>
-        <h2>{!isRunning && !currentEgg ? 'CHOOSE YOUR EGG' : eggTypes[currentEgg]?.name || ''}</h2>
+        <Box sx={{ display: 'flex', alignContent: 'center', justifyContent: 'center', mb: 2 }}>
+          <h2>
+            {!isRunning && !currentEgg ? 'CHOOSE YOUR EGG' : eggTypes[currentEgg]?.name || ''}
+          </h2>
+          {!hasStarted && (
+            <IconButton hidden={hasStarted} onClick={handleSettingsOpen} sx={{ ml: 1 }}>
+              <img src={settingsIcon} alt="Settings" style={{ width: '25px', height: '25px' }} />
+            </IconButton>
+          )}
+        </Box>
         <div>
-          <h2>{formatTime(timeLeft)}</h2>
           {!isRunning && !currentEgg ? (
             <Box sx={{ display: 'flex', flexDirection: 'column', mb: 1, height: '200px' }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-evenly' }}>
@@ -163,12 +189,13 @@ function App() {
             </Box>
           ) : (
             <Box sx={{}}>
+              <h1>{formatTime(timeLeft)}</h1>
               <img
-                src={eggTypes[currentEgg]?.image || bullseyeIcon} // Fallback to bullseyeIcon if no egg selected
+                src={eggTypes[currentEgg]?.image || bullseyeIcon}
                 alt={eggTypes[currentEgg]?.name || 'egg'}
                 style={{
-                  width: '200px',
-                  height: '200px'
+                  width: '170px',
+                  height: '170px'
                 }}
               />
             </Box>
@@ -176,7 +203,7 @@ function App() {
           <IconButton
             onClick={() => {
               console.log(hasStarted)
-              hasStarted ? stopTimer() : ''
+              if (hasStarted) stopTimer()
             }}
           >
             <img src={pauseIcon} alt="Pause/Continue" style={{ width: '100px', height: '32px' }} />
@@ -186,6 +213,84 @@ function App() {
           </IconButton>
         </div>
       </div>
+      <Modal open={open} onClose={handleSettingsClose}>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 280, // Slightly smaller than 300px window width
+            height: 360, // Slightly smaller than 400px window height
+            bgcolor: 'background.paper',
+            backgroundImage: `url(${eggAppBackground})`, // Fixed: Use template literal
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            border: '2px solid #000',
+            boxShadow: 24,
+            p: 4,
+            color: '#000',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}
+        >
+          <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
+            <Typography
+              variant="h6"
+              component="h2"
+              sx={{ color: 'inherit', textAlign: 'center', flexGrow: 1 }}
+            >
+              Settings
+            </Typography>
+            <IconButton onClick={handleSettingsClose} sx={{ p: 0 }}>
+              <img src={closeIcon} alt="Close" style={{ width: '16px', height: '16px' }} />
+            </IconButton>
+          </Box>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
+            <TextField
+              label={eggTypes.ommelet.name}
+              type="number"
+              value={eggTimes.ommelet}
+              onChange={(e) => handleTimeChange('ommelet', e.target.value)}
+              variant="outlined"
+              size="small"
+              sx={{ input: { color: '#000' } }}
+            />
+            <TextField
+              label={eggTypes.bullseye.name}
+              type="number"
+              value={eggTimes.bullseye}
+              onChange={(e) => handleTimeChange('bullseye', e.target.value)}
+              variant="outlined"
+              size="small"
+              sx={{ input: { color: '#000' } }}
+            />
+            <TextField
+              label={eggTypes.boiledegg.name}
+              type="number"
+              value={eggTimes.boiledegg}
+              onChange={(e) => handleTimeChange('boiledegg', e.target.value)}
+              variant="outlined"
+              size="small"
+              sx={{ input: { color: '#000' } }}
+            />
+            <TextField
+              label={eggTypes.scrammbled.name}
+              type="number"
+              value={eggTimes.scrammbled}
+              onChange={(e) => handleTimeChange('scrammbled', e.target.value)}
+              variant="outlined"
+              size="small"
+              sx={{ input: { color: '#000' } }}
+            />
+          </Box>
+          <Button variant="contained" onClick={applyChanges} sx={{ mt: 2 }}>
+            Apply
+          </Button>
+        </Box>
+      </Modal>
     </>
   )
 }
