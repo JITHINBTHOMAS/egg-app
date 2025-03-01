@@ -43,9 +43,11 @@ function App() {
   const handleClose = () => window.electron.close()
   const handleSettingsOpen = () => setOpenSettings(true)
   const handleSettingsClose = () => setOpenSettings(false)
+
   const handleDoneModalClose = () => {
+    setHasStarted(false)
+    setIsRunning(false)
     setOpenDoneModal(false)
-    hasStarted(false)
     timerStopRef.current.pause()
     timerStopRef.current.currentTime = 0
   }
